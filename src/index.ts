@@ -7,12 +7,17 @@ const app = express()
 app.use(express.json())
 
 
-app.get('/companies', async (req, res) => {
-    const companies = await prisma.company.findMany()
-    res.json(companies)
-})
+export const get = async (req: any, res: any) => {
+    try {
+        const companies = await prisma.company.findMany()
+        res.json(companies)
+    }
+    catch (error) {
+        res.json(error)
+    }
+}
 
-app.post(`/companies`, async (req, res) => {
+export const post = async (req: any, res: any) => {
     const { name, ratio } = req.body
     const result = await prisma.company.create({
         data: {
@@ -22,9 +27,9 @@ app.post(`/companies`, async (req, res) => {
         },
     })
     res.json(result)
-})
+}
 
-app.delete(`/companies`, async (req, res) => {
+export const del = async (req: any, res: any) => {
     const { id } = req.body
 
     try {
@@ -39,9 +44,8 @@ app.delete(`/companies`, async (req, res) => {
         res.json({ error: `Post with ID ${id} does not exist in the database` })
     }
 
-})
-
-app.put('/companies', async (req, res) => {
+}
+export const put = async (req: any, res: any) => {
     const { id, data } = req.body
 
     try {
@@ -56,10 +60,17 @@ app.put('/companies', async (req, res) => {
     } catch (error) {
         res.json({ error: `Post with ID ${id} does not exist in the database` })
     }
-})
+}
 
 
+const router = express.Router();
 
+router.get('/companies', get);
+router.post('/companies', post);
+router.put('/companies', put);
+router.delete('/companies', del);
+
+app.use('/', router)
 
 
 
