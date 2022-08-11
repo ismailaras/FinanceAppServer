@@ -1,76 +1,97 @@
 import { Prisma, PrismaClient } from '@prisma/client'
 import express from 'express'
+import cors from 'cors';
 
 const prisma = new PrismaClient()
 const app = express()
+
+app.use(cors())
 
 app.use(express.json())
 
 
 export const get = async (req: any, res: any) => {
     const { entity } = req.params;
-
+    let data;
     try {
         switch (entity) {
             case 'companies':
-                const companies = await prisma.company.findMany()
-                res.json(companies)
+                data = await prisma.company.findMany()
                 break;
             case 'invoices':
-                const invoices = await prisma.invoice.findMany()
-                res.json(invoices)
+                data = await prisma.invoice.findMany()
                 break;
             case 'invoice-type':
-                const invoiceType = await prisma.invoiceType.findMany()
-                res.json(invoiceType)
+                data = await prisma.invoiceType.findMany()
                 break;
             default:
-                res.json("Entity not found")
-                break;
+                throw new Error('Entity not found.')
         }
+        return res.json({status: 'success', data})
     }
-    catch (error) {
+    catch (error: any) {
+        console.log(error.message)
         res.json(error)
     }
 }
 
 export const post = async (req: any, res: any) => {
     const { entity } = req.params;
-    const data = req.body
+    const data = req.body;
     try {
         switch (entity) {
             case 'companies':
-                await prisma.company.create({
+                const newCompany = await prisma.company.create({
                     data: {
                         ...data,
                         wallet: 0
                     },
-                })
-                res.json({ status: "success" })
-                break;
+                });
+                return res.json({ status: "success", newCompany })
             case 'invoices':
-                await prisma.invoice.create({
+                const foundInvoiceType = await prisma.invoiceType.findUnique({
+                    where: {
+                        text: data.invoiceType
+                    }
+                })
+                if (!foundInvoiceType) 
+                    await prisma.invoiceType.create({
+                        data: {
+                            text: data.invoiceType
+                        }
+                    })
+                
+                await prisma.company.update({
+                    where: {
+                        name: data.company
+                    },
+                    data: {
+                        wallet: {
+                            increment: data.amount * -1
+                        }
+                    }
+                  })
+
+                const newInvoice = await prisma.invoice.create({
                     data: {
                         ...data,
                     },
                 })
-                res.json({ status: "success" })
-                break;
+                return res.json({ status: "success", newInvoice })
             case 'invoice-type':
                 await prisma.invoiceType.create({
                     data: {
                         ...data,
                     },
                 })
-                res.json({ status: "success" })
-                break;
+                return res.json({ status: "success" })
             default:
-                res.json("Entity not found")
-                break;
+                return res.json({status: 'error', message: "Entity not found"})
         }
     }
-    catch (error) {
-        res.json(error)
+    catch (error: any) {
+        console.log(error.message)
+        return res.json({status: 'error', message: error.message})
     }
 }
 
@@ -172,4 +193,4 @@ app.use('/', router)
 
 
 
-app.listen(3000, () => console.log(`🚀 Server ready at: http://localhost:3000`))
+app.listen(5003, () => console.log(`🚀 Server ready at: http://localhost:5003`))
