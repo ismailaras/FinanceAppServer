@@ -1,11 +1,15 @@
 import { Prisma, PrismaClient } from '@prisma/client'
 import express from 'express'
 import cors from 'cors';
+import dotenv from 'dotenv';
 
 const prisma = new PrismaClient()
 const app = express()
 
+dotenv.config()
+
 app.use(cors())
+
 
 app.use(express.json())
 
