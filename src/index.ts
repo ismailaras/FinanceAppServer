@@ -189,6 +189,6 @@ router.delete('/:entity', del);
 router.put('/:entity', put);
 app.use('/', router)
 
+const PORT = process.env.PORT || 3000
 
-
-app.listen(5003, () => console.log(`🚀 Server ready at: http://localhost:5003`))
+app.listen(PORT, () => console.log(`🚀 Server ready at: ${PORT}`))
