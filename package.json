@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "license": "MIT",
   "scripts": {
-    "start": "nodemon src/index.ts"
+    "start": "ts-node src/index.ts",
   },
   "dependencies": {
     "@prisma/client": "4.1.1",
